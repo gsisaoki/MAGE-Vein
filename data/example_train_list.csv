@@ -1,0 +1,10 @@
+file_path,age,gender,group_id
+path/to/dataset/subject001/img_001_0.bmp,34,0,subject001_L
+path/to/dataset/subject001/img_001_1.bmp,34,0,subject001_L
+path/to/dataset/subject001/img_001_2.bmp,34,0,subject001_L
+path/to/dataset/subject002/img_002_0.bmp,52,1,subject002_R
+path/to/dataset/subject002/img_002_1.bmp,52,1,subject002_R
+path/to/dataset/subject002/img_002_2.bmp,52,1,subject002_R
+path/to/dataset/subject003/img_003_0.bmp,45,1,subject003_L
+path/to/dataset/subject003/img_003_1.bmp,45,1,subject003_L
+path/to/dataset/subject003/img_003_2.bmp,45,1,subject003_L

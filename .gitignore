@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+.venv/
+venv/
+env/
+.conda/
+.ipynb_checkpoints/
+
+# PyTorch / experiments
+*.pth
+*.pt
+*.pth.tar
+*.ckpt
+experiments/
+results/
+runs/
+tensorboard/
+wandb/
+
+# Data — never commit real datasets or subject lists
+data/*
+!data/example_*.csv
+datasets/
+
+# Tooling / local artifacts
+repomix-output.xml
+refactor_plan.md
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Beads / Dolt (local issue tracker — not for the public repo)
+.dolt/
+.beads/
+*.db
+.beads-credential-key
+
+# Tools and agent configurations (Excluded by user request)
+.beads/
+.claude/
+.cursor/
+AGENTS.md
+CLAUDE.md
+.cursorignore

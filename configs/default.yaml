@@ -1,0 +1,28 @@
+seed: 20
+output_dir: results/
+checkpoint_path: null
+
+device: cuda:0
+num_workers: 4
+exp_name: null
+
+data:
+  train_csv: path/to/dataset/train_list.csv
+  val_csv: path/to/dataset/val_list.csv
+  test_csv: path/to/dataset/test_list.csv
+  data_root: path/to/dataset
+  crop_size: 224
+  images_per_group: 3
+
+model:
+  name: multi
+  pretrained: true
+
+train:
+  epochs: 50
+  optimizer: adamw
+  lr: 0.0001
+  weight_decay: 0.01
+  batch_size: 16
+  gender_loss_weight: 20.0
+  early_stop_patience: 10
