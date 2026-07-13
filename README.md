@@ -8,7 +8,7 @@ MAGE-Vein performs joint **age regression** and **gender classification** from g
 
 ## Features
 
-- Multi-instance input: three finger images per sample (configurable via `images_per_group`)
+- Multi-instance input: three finger images per sample (fixed to 3 images in the proposed model)
 - Multi-task learning: age regression + binary gender classification
 - Config-driven training and evaluation (`configs/default.yaml`)
 - Best-checkpoint saving based on validation MAE
@@ -19,7 +19,7 @@ Requires **Python 3.9+** and a CUDA-capable GPU (recommended). CPU execution is 
 
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone https://github.com/gsisaoki/MAGE-Vein.git
 cd MAGE-Vein
 
 # (Recommended) create a virtual environment
@@ -29,6 +29,19 @@ source .venv/bin/activate   # Linux/macOS
 
 # Install dependencies
 pip install -r requirements.txt
+
+```
+
+## Pre-trained Models
+
+You can download the pre-trained weights (`best.pth.tar`) from the official [GitHub Releases](https://github.com/gsisaoki/MAGE-Vein/releases/tag/v1.0.0).
+
+Please create a `checkpoints/` directory under the project root and place the downloaded file there before running the evaluation script:
+
+```bash
+mkdir -p checkpoints
+# Move the downloaded best.pth.tar into checkpoints/
+
 ```
 
 ## Data Preparation
@@ -39,14 +52,14 @@ Provide train, validation, and test CSV manifests and update the paths in `confi
 
 Each manifest must contain the following columns:
 
-| Column     | Type | Description |
-|------------|------|-------------|
-| `file_path` | str  | Image path **relative to** `data.data_root` |
-| `age`       | int  | Subject age in years (precomputed by the user) |
-| `gender`    | int  | `0` = male, `1` = female |
-| `group_id`  | str  | Shared ID for images from the same finger/session |
+| Column | Type | Description |
+| --- | --- | --- |
+| `file_path` | str | Image path **relative to** `data.data_root` |
+| `age` | int | Subject age in years (precomputed by the user) |
+| `gender` | int | `0` = male, `1` = female |
+| `group_id` | str | Shared ID for images from the same finger/session |
 
-Rows with the same `group_id` are grouped together. Every consecutive `images_per_group` rows (default: 3) within a group form one training/evaluation sample.
+Rows with the same `group_id` are grouped together. Every consecutive 3 rows within a group form one training/evaluation sample.
 
 **Example** (see also `data/example_train_list.csv`):
 
@@ -57,6 +70,7 @@ path/to/dataset/subject001/img_001_1.bmp,34,0,subject001_L
 path/to/dataset/subject001/img_001_2.bmp,34,0,subject001_L
 path/to/dataset/subject002/img_002_0.bmp,52,1,subject002_R
 path/to/dataset/subject002/img_002_1.bmp,52,1,subject002_R
+
 ```
 
 Update `configs/default.yaml`:
@@ -69,6 +83,7 @@ data:
   data_root: path/to/dataset
   crop_size: 224
   images_per_group: 3
+
 ```
 
 ## Usage
@@ -81,10 +96,11 @@ python train.py \
   --exp-name my_experiment \
   --device 0 \
   --num-workers 4
+
 ```
 
 | Argument | Description |
-|----------|-------------|
+| --- | --- |
 | `--config` | Path to the YAML configuration file (default: `configs/default.yaml`) |
 | `--exp-name` | **Required.** Experiment suffix; a date prefix is added automatically (e.g. `2026-07-03_my_experiment`) |
 | `--device` | CUDA device index (`0`, `1`, …) or `cpu` (default: `0`) |
@@ -101,6 +117,7 @@ results/<exp_name>/
 ├── tensorboard/
 ├── results/
 └── config.yaml
+
 ```
 
 ### Evaluation
@@ -110,23 +127,24 @@ Run evaluation with the **best** checkpoint saved during training:
 ```bash
 python test.py \
   --config configs/default.yaml \
-  --checkpoint results/2026-07-03_my_experiment/checkpoints/best.pth.tar \
+  --checkpoint checkpoints/best.pth.tar \
   --device 0 \
   --num-workers 4
+
 ```
 
 | Argument | Description |
-|----------|-------------|
+| --- | --- |
 | `--config` | Path to the YAML configuration file (default: `configs/default.yaml`) |
-| `--checkpoint` | **Required.** Path to `best.pth.tar` from training |
+| `--checkpoint` | **Required.** Path to `best.pth.tar` from training or downloaded pre-trained models |
 | `--device` | CUDA device index or `cpu` (default: `0`) |
 | `--num-workers` | Number of DataLoader workers (overrides config when set) |
 | `--exp-name` | Experiment name for output paths; inferred from `--checkpoint` when omitted |
 
 Evaluation metrics (printed to stdout and figures saved under `results/<exp_name>/results/test/`):
 
-- Age: MAE, RMSE, CS@5, Pearson / Spearman correlation
-- Gender: classification report (accuracy, precision, recall, F1)
+* Age: MAE, CS@5, Pearson / Spearman correlation
+* Gender: classification report (accuracy, precision, recall, F1)
 
 ## Project Structure
 
@@ -140,6 +158,7 @@ src/
   utils.py             # Config loading, checkpoints, utilities
 train.py               # Training entry point
 test.py                # Evaluation entry point
+
 ```
 
 ## Results
@@ -147,22 +166,22 @@ test.py                # Evaluation entry point
 Age estimation accuracy on the private finger-vein dataset (IJCB 2026). Lower is better for MAE and Std.; higher is better for Corr. and CS@5.
 
 | Model | MAE [y/o] ↓ | Corr. ↑ | CS@5 ↑ | Std. [y/o] ↓ |
-|-------|-------------|---------|--------|--------------|
+| --- | --- | --- | --- | --- |
 | Dataset Avg. | 13.61 | — | 0.184 | 16.08 |
 | Wimmer et al. (ICPRW 2023) | 9.33 | 0.700 | 0.331 | 11.59 |
 | **MAGE-Vein (Proposed)** | **6.47** | **0.876** | **0.455** | **8.05** |
 | **MAGE-Vein w/ Aug. (Proposed w/ Aug.)** | **6.12** | **0.880** | **0.526** | **7.77** |
 
-- **MAE:** Mean Absolute Error (years)
-- **Corr.:** Correlation coefficient between predicted and chronological age
-- **CS@5:** Cumulative Score — fraction of samples with absolute error ≤ 5 years
-- **Std.:** Standard deviation of prediction errors (years)
+* **MAE:** Mean Absolute Error (years)
+* **Corr.:** Correlation coefficient between predicted and chronological age
+* **CS@5:** Cumulative Score — fraction of samples with absolute error ≤ 5 years
+* **Std:** Standard deviation of prediction errors (years)
 
 The best results are achieved with vertical-flip augmentation during training (`MAGE-Vein w/ Aug.`). This repository implements the proposed multi-instance architecture; enable training-time augmentation via `GroupedFingerVeinDataset` (random vertical flip, `p=0.4`).
 
 ## License
 
-This project is released under a **research-use-only** license by **Computer Structures Laboratory, Graduate School of Information Sciences, Tohoku University**. See [LICENSE](LICENSE) for details. Commercial use requires prior written permission from the copyright holder.
+This project is released under a **research-use-only** license by **Computer Structures Laboratory, Graduate School of Information Sciences, Tohoku University**. See [LICENSE](https://github.com/gsisaoki/MAGE-Vein/blob/main/LICENSE) for details. Commercial use requires prior written permission from the copyright holder.
 
 ## Citation
 
@@ -176,6 +195,7 @@ If you use this code in your research, please cite:
   year      = "2026",
   month     = sep
 }
+
 ```
 
 ## Contact
